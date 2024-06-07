@@ -3,10 +3,10 @@
 package model
 
 type Article struct {
-	ID    string `json:"id"`
-	Text  string `json:"text"`
-	Draft bool   `json:"draft"`
-	User  *User  `json:"user"`
+	ID     string `json:"id"`
+	Text   string `json:"text"`
+	Status string `json:"status"`
+	User   *User  `json:"user"`
 }
 
 type Mutation struct {

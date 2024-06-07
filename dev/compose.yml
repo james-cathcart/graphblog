@@ -1,0 +1,13 @@
+---
+services:
+
+  graphblog-db:
+    container_name: graphblog-db
+    image: graphblog-db
+    build:
+      context: .
+    ports:
+      - 5432:5432
+    environment:
+      - "POSTGRES_PASSWORD=devpass"
+      - "POSTGRES_USER=blog_user"

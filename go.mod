@@ -4,6 +4,8 @@ go 1.22.4
 
 require (
 	github.com/99designs/gqlgen v0.17.48
+	github.com/james-cathcart/golog v0.0.4
+	github.com/lib/pq v1.10.9
 	github.com/vektah/gqlparser/v2 v2.5.12
 )
 

@@ -48,10 +48,10 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Article struct {
-		Draft func(childComplexity int) int
-		ID    func(childComplexity int) int
-		Text  func(childComplexity int) int
-		User  func(childComplexity int) int
+		ID     func(childComplexity int) int
+		Status func(childComplexity int) int
+		Text   func(childComplexity int) int
+		User   func(childComplexity int) int
 	}
 
 	Mutation struct {
@@ -98,19 +98,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	_ = ec
 	switch typeName + "." + field {
 
-	case "Article.draft":
-		if e.complexity.Article.Draft == nil {
-			break
-		}
-
-		return e.complexity.Article.Draft(childComplexity), true
-
 	case "Article.id":
 		if e.complexity.Article.ID == nil {
 			break
 		}
 
 		return e.complexity.Article.ID(childComplexity), true
+
+	case "Article.status":
+		if e.complexity.Article.Status == nil {
+			break
+		}
+
+		return e.complexity.Article.Status(childComplexity), true
 
 	case "Article.text":
 		if e.complexity.Article.Text == nil {
@@ -475,8 +475,8 @@ func (ec *executionContext) fieldContext_Article_text(_ context.Context, field g
 	return fc, nil
 }
 
-func (ec *executionContext) _Article_draft(ctx context.Context, field graphql.CollectedField, obj *model.Article) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Article_draft(ctx, field)
+func (ec *executionContext) _Article_status(ctx context.Context, field graphql.CollectedField, obj *model.Article) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Article_status(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -489,7 +489,7 @@ func (ec *executionContext) _Article_draft(ctx context.Context, field graphql.Co
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Draft, nil
+		return obj.Status, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -501,19 +501,19 @@ func (ec *executionContext) _Article_draft(ctx context.Context, field graphql.Co
 		}
 		return graphql.Null
 	}
-	res := resTmp.(bool)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Article_draft(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Article_status(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Article",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Boolean does not have child fields")
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -612,8 +612,8 @@ func (ec *executionContext) fieldContext_Mutation_createArticle(ctx context.Cont
 				return ec.fieldContext_Article_id(ctx, field)
 			case "text":
 				return ec.fieldContext_Article_text(ctx, field)
-			case "draft":
-				return ec.fieldContext_Article_draft(ctx, field)
+			case "status":
+				return ec.fieldContext_Article_status(ctx, field)
 			case "user":
 				return ec.fieldContext_Article_user(ctx, field)
 			}
@@ -738,8 +738,8 @@ func (ec *executionContext) fieldContext_Query_articles(_ context.Context, field
 				return ec.fieldContext_Article_id(ctx, field)
 			case "text":
 				return ec.fieldContext_Article_text(ctx, field)
-			case "draft":
-				return ec.fieldContext_Article_draft(ctx, field)
+			case "status":
+				return ec.fieldContext_Article_status(ctx, field)
 			case "user":
 				return ec.fieldContext_Article_user(ctx, field)
 			}
@@ -2879,8 +2879,8 @@ func (ec *executionContext) _Article(ctx context.Context, sel ast.SelectionSet, 
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "draft":
-			out.Values[i] = ec._Article_draft(ctx, field, obj)
+		case "status":
+			out.Values[i] = ec._Article_status(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
