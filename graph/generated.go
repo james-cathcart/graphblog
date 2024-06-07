@@ -48,10 +48,11 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Article struct {
-		ID     func(childComplexity int) int
-		Status func(childComplexity int) int
-		Text   func(childComplexity int) int
-		User   func(childComplexity int) int
+		Content func(childComplexity int) int
+		ID      func(childComplexity int) int
+		Status  func(childComplexity int) int
+		Title   func(childComplexity int) int
+		User    func(childComplexity int) int
 	}
 
 	Mutation struct {
@@ -98,6 +99,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	_ = ec
 	switch typeName + "." + field {
 
+	case "Article.content":
+		if e.complexity.Article.Content == nil {
+			break
+		}
+
+		return e.complexity.Article.Content(childComplexity), true
+
 	case "Article.id":
 		if e.complexity.Article.ID == nil {
 			break
@@ -112,12 +120,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Article.Status(childComplexity), true
 
-	case "Article.text":
-		if e.complexity.Article.Text == nil {
+	case "Article.title":
+		if e.complexity.Article.Title == nil {
 			break
 		}
 
-		return e.complexity.Article.Text(childComplexity), true
+		return e.complexity.Article.Title(childComplexity), true
 
 	case "Article.user":
 		if e.complexity.Article.User == nil {
@@ -431,8 +439,8 @@ func (ec *executionContext) fieldContext_Article_id(_ context.Context, field gra
 	return fc, nil
 }
 
-func (ec *executionContext) _Article_text(ctx context.Context, field graphql.CollectedField, obj *model.Article) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Article_text(ctx, field)
+func (ec *executionContext) _Article_title(ctx context.Context, field graphql.CollectedField, obj *model.Article) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Article_title(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -445,7 +453,7 @@ func (ec *executionContext) _Article_text(ctx context.Context, field graphql.Col
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Text, nil
+		return obj.Title, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -462,7 +470,51 @@ func (ec *executionContext) _Article_text(ctx context.Context, field graphql.Col
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Article_text(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Article_title(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Article",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Article_content(ctx context.Context, field graphql.CollectedField, obj *model.Article) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Article_content(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Content, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Article_content(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Article",
 		Field:      field,
@@ -610,8 +662,10 @@ func (ec *executionContext) fieldContext_Mutation_createArticle(ctx context.Cont
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Article_id(ctx, field)
-			case "text":
-				return ec.fieldContext_Article_text(ctx, field)
+			case "title":
+				return ec.fieldContext_Article_title(ctx, field)
+			case "content":
+				return ec.fieldContext_Article_content(ctx, field)
 			case "status":
 				return ec.fieldContext_Article_status(ctx, field)
 			case "user":
@@ -736,8 +790,10 @@ func (ec *executionContext) fieldContext_Query_articles(_ context.Context, field
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Article_id(ctx, field)
-			case "text":
-				return ec.fieldContext_Article_text(ctx, field)
+			case "title":
+				return ec.fieldContext_Article_title(ctx, field)
+			case "content":
+				return ec.fieldContext_Article_content(ctx, field)
 			case "status":
 				return ec.fieldContext_Article_status(ctx, field)
 			case "user":
@@ -2796,20 +2852,27 @@ func (ec *executionContext) unmarshalInputNewArticle(ctx context.Context, obj in
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"text", "userId"}
+	fieldsInOrder := [...]string{"title", "content", "userId"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "text":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("text"))
+		case "title":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("title"))
 			data, err := ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.Text = data
+			it.Title = data
+		case "content":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("content"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Content = data
 		case "userId":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userId"))
 			data, err := ec.unmarshalNString2string(ctx, v)
@@ -2874,8 +2937,13 @@ func (ec *executionContext) _Article(ctx context.Context, sel ast.SelectionSet, 
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "text":
-			out.Values[i] = ec._Article_text(ctx, field, obj)
+		case "title":
+			out.Values[i] = ec._Article_title(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "content":
+			out.Values[i] = ec._Article_content(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}

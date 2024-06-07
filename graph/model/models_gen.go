@@ -3,18 +3,20 @@
 package model
 
 type Article struct {
-	ID     string `json:"id"`
-	Text   string `json:"text"`
-	Status string `json:"status"`
-	User   *User  `json:"user"`
+	ID      string `json:"id"`
+	Title   string `json:"title"`
+	Content string `json:"content"`
+	Status  string `json:"status"`
+	User    *User  `json:"user"`
 }
 
 type Mutation struct {
 }
 
 type NewArticle struct {
-	Text   string `json:"text"`
-	UserID string `json:"userId"`
+	Title   string `json:"title"`
+	Content string `json:"content"`
+	UserID  string `json:"userId"`
 }
 
 type NewUser struct {

@@ -1,6 +1,7 @@
 type Article{
   id: ID!
-  text: String!
+  title: String!
+  content: String!
   status: String!
   user: User!
 }
@@ -11,7 +12,8 @@ type User {
 }
 
 input NewArticle {
-  text: String!
+  title: String!
+  content: String!
   userId: String!
 }
 

@@ -1,6 +1,7 @@
 package graph
 
 import (
+	"github.com/james-cathcart/golog"
 	"graphblog/internal/article"
 	"graphblog/internal/user"
 )
@@ -10,6 +11,7 @@ import (
 // It serves as dependency injection for your app, add any dependencies you require here.
 
 type Resolver struct {
+	log        golog.GoLogger
 	articleSvc article.Service
 	userSvc    user.Service
 }
@@ -17,6 +19,7 @@ type Resolver struct {
 func NewResolver(articleSvc article.Service, userSvc user.Service) *Resolver {
 
 	return &Resolver{
+		log:        golog.NewLogger(golog.NewNativeLogger(`[ resolver ] `)),
 		articleSvc: articleSvc,
 		userSvc:    userSvc,
 	}

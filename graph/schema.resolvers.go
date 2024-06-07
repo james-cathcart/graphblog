@@ -22,7 +22,12 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) 
 
 // Articles is the resolver for the articles field.
 func (r *queryResolver) Articles(ctx context.Context) ([]*model.Article, error) {
-	panic(fmt.Errorf("not implemented: Articles - articles"))
+	records, err := r.articleSvc.GetAll()
+	if err != nil {
+		r.log.Error(err)
+		return nil, err
+	}
+	return records, nil
 }
 
 // Users is the resolver for the users field.
