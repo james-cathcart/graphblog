@@ -10,14 +10,24 @@ import (
 	"graphblog/graph/model"
 )
 
-// CreateTodo is the resolver for the createTodo field.
-func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewArticle) (*model.Article, error) {
-	panic(fmt.Errorf("not implemented: CreateTodo - createTodo"))
+// CreateArticle is the resolver for the createArticle field.
+func (r *mutationResolver) CreateArticle(ctx context.Context, input model.NewArticle) (*model.Article, error) {
+	panic(fmt.Errorf("not implemented: CreateArticle - createArticle"))
 }
 
-// Todos is the resolver for the todos field.
-func (r *queryResolver) Todos(ctx context.Context) ([]*model.Article, error) {
-	panic(fmt.Errorf("not implemented: Todos - todos"))
+// CreateUser is the resolver for the createUser field.
+func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) (*model.User, error) {
+	panic(fmt.Errorf("not implemented: CreateUser - createUser"))
+}
+
+// Articles is the resolver for the articles field.
+func (r *queryResolver) Articles(ctx context.Context) ([]*model.Article, error) {
+	panic(fmt.Errorf("not implemented: Articles - articles"))
+}
+
+// Users is the resolver for the users field.
+func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
+	panic(fmt.Errorf("not implemented: Users - users"))
 }
 
 // Mutation returns MutationResolver implementation.

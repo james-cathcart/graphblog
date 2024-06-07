@@ -17,6 +17,10 @@ type NewArticle struct {
 	UserID string `json:"userId"`
 }
 
+type NewUser struct {
+	Name string `json:"name"`
+}
+
 type Query struct {
 }
 

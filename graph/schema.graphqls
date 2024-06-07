@@ -1,7 +1,3 @@
-# GraphQL schema example
-#
-# https://gqlgen.com/getting-started/
-
 type Article{
   id: ID!
   text: String!
@@ -14,15 +10,21 @@ type User {
   name: String!
 }
 
-type Query {
-  todos: [Article!]!
-}
-
 input NewArticle {
   text: String!
   userId: String!
 }
 
+input NewUser {
+  name: String!
+}
+
+type Query {
+  articles: [Article!]!
+  users: [User!]!
+}
+
 type Mutation {
-  createTodo(input: NewArticle!): Article!
+  createArticle(input: NewArticle!): Article!
+  createUser(input: NewUser!): User!
 }
