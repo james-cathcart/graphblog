@@ -18,10 +18,66 @@ func NewPostgresDAO(db *sql.DB) DAO {
 	}
 }
 
-func (svc *PostgresDAO) Create(input model.User) (int64, error) {
-	return -1, nil
+func (dao *PostgresDAO) Create(input model.User) (int64, error) {
+
+	stmt, err := dao.db.Prepare(`INSERT INTO users (display_name) VALUES (?)`)
+	if err != nil {
+		dao.log.Error(err)
+		return -1, err
+	}
+	defer func(closeFunc func() error) {
+		err = closeFunc()
+		if err != nil {
+			dao.log.Error(err)
+		}
+	}(stmt.Close)
+
+	result, err := stmt.Exec(input.Name)
+	if err != nil {
+		dao.log.Error(err)
+		return -1, err
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		dao.log.Error(err)
+		return -1, err
+	}
+
+	return id, nil
+
 }
 
-func (svc *PostgresDAO) GetAll() ([]*model.User, error) {
-	return nil, nil
+func (dao *PostgresDAO) GetAll() ([]*model.User, error) {
+
+	stmt, err := dao.db.Prepare(`SELECT id, display_name FROM users ORDER BY id DESC`)
+	if err != nil {
+		dao.log.Error(err)
+		return nil, err
+	}
+	defer func(closeFunc func() error) {
+		err = closeFunc()
+		if err != nil {
+			dao.log.Error(err)
+		}
+	}(stmt.Close)
+
+	rows, err := stmt.Query()
+	if err != nil {
+		dao.log.Error(err)
+		return nil, err
+	}
+
+	var records []*model.User
+	for rows.Next() {
+		tmp := model.User{}
+		err = rows.Scan(&tmp.ID, &tmp.Name)
+		if err != nil {
+			dao.log.Error(err)
+			continue
+		}
+		records = append(records, &tmp)
+	}
+
+	return records, nil
 }

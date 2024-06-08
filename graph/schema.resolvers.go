@@ -6,22 +6,49 @@ package graph
 
 import (
 	"context"
-	"fmt"
 	"graphblog/graph/model"
 )
 
 // CreateArticle is the resolver for the createArticle field.
 func (r *mutationResolver) CreateArticle(ctx context.Context, input model.NewArticle) (*model.Article, error) {
-	panic(fmt.Errorf("not implemented: CreateArticle - createArticle"))
+
+	incept := model.Article{
+		Title:   input.Title,
+		Content: input.Content,
+		User: &model.User{
+			ID: input.UserID,
+		},
+	}
+
+	saved, err := r.articleSvc.Create(incept)
+	if err != nil {
+		r.log.Error(err)
+		return nil, err
+	}
+
+	return &saved, nil
 }
 
 // CreateUser is the resolver for the createUser field.
 func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) (*model.User, error) {
-	panic(fmt.Errorf("not implemented: CreateUser - createUser"))
+
+	incept := model.User{
+		Name: input.Name,
+	}
+
+	saved, err := r.userSvc.Create(incept)
+	if err != nil {
+		r.log.Error(err)
+		return nil, err
+	}
+
+	return &saved, nil
+
 }
 
 // Articles is the resolver for the articles field.
 func (r *queryResolver) Articles(ctx context.Context) ([]*model.Article, error) {
+
 	records, err := r.articleSvc.GetAll()
 	if err != nil {
 		r.log.Error(err)
@@ -32,7 +59,14 @@ func (r *queryResolver) Articles(ctx context.Context) ([]*model.Article, error) 
 
 // Users is the resolver for the users field.
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
-	panic(fmt.Errorf("not implemented: Users - users"))
+
+	records, err := r.userSvc.GetAll()
+	if err != nil {
+		r.log.Error(err)
+		return nil, err
+	}
+
+	return records, nil
 }
 
 // Mutation returns MutationResolver implementation.
