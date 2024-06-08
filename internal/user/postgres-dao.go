@@ -20,7 +20,7 @@ func NewPostgresDAO(db *sql.DB) DAO {
 
 func (dao *PostgresDAO) Create(input model.User) (int64, error) {
 
-	stmt, err := dao.db.Prepare(`INSERT INTO users (display_name) VALUES (?)`)
+	stmt, err := dao.db.Prepare(`INSERT INTO actors (display_name) VALUES (?)`)
 	if err != nil {
 		dao.log.Error(err)
 		return -1, err
@@ -50,7 +50,7 @@ func (dao *PostgresDAO) Create(input model.User) (int64, error) {
 
 func (dao *PostgresDAO) GetAll() ([]*model.User, error) {
 
-	stmt, err := dao.db.Prepare(`SELECT id, display_name FROM users ORDER BY id DESC`)
+	stmt, err := dao.db.Prepare(`SELECT id, display_name FROM actors ORDER BY id DESC`)
 	if err != nil {
 		dao.log.Error(err)
 		return nil, err

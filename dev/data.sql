@@ -13,4 +13,4 @@ CREATE TABLE IF NOT EXISTS articles (
 );
 
 INSERT INTO actors (display_name) VALUES ('default_user');
-INSERT INTO articles (title, content, status, user_id) VALUES ('Default Title', 'Default content.', 'published', 1);
+INSERT INTO articles (title, content, status, actor_id) VALUES ('Default Title', 'Default content.', 'published', 1);

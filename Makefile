@@ -9,6 +9,9 @@ build:
 test:
 	go test internal ./...
 
+envbuild:
+	cd dev && docker compose build
+
 envup:
 	cd dev && docker compose up -d
 
