@@ -2852,7 +2852,7 @@ func (ec *executionContext) unmarshalInputNewArticle(ctx context.Context, obj in
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"title", "content", "userId"}
+	fieldsInOrder := [...]string{"title", "content", "status", "userId"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -2873,6 +2873,13 @@ func (ec *executionContext) unmarshalInputNewArticle(ctx context.Context, obj in
 				return it, err
 			}
 			it.Content = data
+		case "status":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Status = data
 		case "userId":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userId"))
 			data, err := ec.unmarshalNString2string(ctx, v)

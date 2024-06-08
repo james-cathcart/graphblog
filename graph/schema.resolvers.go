@@ -11,10 +11,10 @@ import (
 
 // CreateArticle is the resolver for the createArticle field.
 func (r *mutationResolver) CreateArticle(ctx context.Context, input model.NewArticle) (*model.Article, error) {
-
 	incept := model.Article{
 		Title:   input.Title,
 		Content: input.Content,
+		Status:  input.Status,
 		User: &model.User{
 			ID: input.UserID,
 		},
@@ -31,7 +31,6 @@ func (r *mutationResolver) CreateArticle(ctx context.Context, input model.NewArt
 
 // CreateUser is the resolver for the createUser field.
 func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) (*model.User, error) {
-
 	incept := model.User{
 		Name: input.Name,
 	}
@@ -43,12 +42,10 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) 
 	}
 
 	return &saved, nil
-
 }
 
 // Articles is the resolver for the articles field.
 func (r *queryResolver) Articles(ctx context.Context) ([]*model.Article, error) {
-
 	records, err := r.articleSvc.GetAll()
 	if err != nil {
 		r.log.Error(err)
@@ -59,7 +56,6 @@ func (r *queryResolver) Articles(ctx context.Context) ([]*model.Article, error) 
 
 // Users is the resolver for the users field.
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
-
 	records, err := r.userSvc.GetAll()
 	if err != nil {
 		r.log.Error(err)

@@ -16,6 +16,7 @@ type Mutation struct {
 type NewArticle struct {
 	Title   string `json:"title"`
 	Content string `json:"content"`
+	Status  string `json:"status"`
 	UserID  string `json:"userId"`
 }
 

@@ -20,7 +20,7 @@ func NewPostgresDAO(db *sql.DB) DAO {
 
 func (dao *PostgresDAO) Create(input model.Article) (int64, error) {
 
-	stmt, err := dao.db.Prepare(`INSERT INTO articles (title, content, status, article_id) VALUES (?,?,?,?)`)
+	stmt, err := dao.db.Prepare(`INSERT INTO articles (title, content, status, actor_id) VALUES (?,?,?,?)`)
 	if err != nil {
 		dao.log.Error(err)
 		return -1, err

@@ -17,3 +17,6 @@ envup:
 
 envdown:
 	cd dev && docker compose down
+
+genql:
+	go run github.com/99designs/gqlgen generate
