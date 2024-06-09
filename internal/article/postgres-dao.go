@@ -2,6 +2,7 @@ package article
 
 import (
 	"database/sql"
+	"errors"
 	"github.com/james-cathcart/golog"
 	"graphblog/graph/model"
 )
@@ -20,7 +21,7 @@ func NewPostgresDAO(db *sql.DB) DAO {
 
 func (dao *PostgresDAO) Create(input model.Article) (int64, error) {
 
-	stmt, err := dao.db.Prepare(`INSERT INTO articles (title, content, status, actor_id) VALUES (?,?,?,?)`)
+	stmt, err := dao.db.Prepare(`INSERT INTO articles (title, content, status, actor_id) VALUES ($1,$2,$3,$4) RETURNING id`)
 	if err != nil {
 		dao.log.Error(err)
 		return -1, err
@@ -32,14 +33,17 @@ func (dao *PostgresDAO) Create(input model.Article) (int64, error) {
 		}
 	}(stmt.Close)
 
-	result, err := stmt.Exec(input.Title, input.Content, input.Status, input.User.ID)
+	row := stmt.QueryRow(input.Title, input.Content, input.Status, input.User.ID)
+
+	var id int64
+	err = row.Scan(&id)
 	if err != nil {
 		dao.log.Error(err)
 		return -1, err
 	}
 
-	id, err := result.LastInsertId()
-	if err != nil {
+	if id == 0 {
+		err = errors.New(`failed to create record, possible duplicate`)
 		dao.log.Error(err)
 		return -1, err
 	}
