@@ -1,5 +1,8 @@
 package user
 
+//go:generate mockgen -destination=dao_mock.go -package=user . DAO
+//go:generate mockgen -destination=service_mock.go -package=user . Service
+
 import (
 	"graphblog/graph/model"
 )

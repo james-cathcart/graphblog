@@ -6,6 +6,9 @@ clean:
 build:
 	go build -o bin/api-server cmd/api/server.go
 
+mocks:
+	go generate ./...
+
 test:
 	go test internal ./...
 

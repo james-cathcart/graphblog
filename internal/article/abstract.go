@@ -1,5 +1,8 @@
 package article
 
+//go:generate mockgen -destination=dao_mock.go -package=article . DAO
+//go:generate mockgen -destination=service_mock.go -package=article . Service
+
 import "graphblog/graph/model"
 
 // DAO abstracts the data access layer
