@@ -147,16 +147,16 @@ func TestGetAll(t *testing.T) {
 				{
 					noErrors := true
 
-					for i, val := range result {
+					for i := range test.expect.records {
 
-						if !reflect.DeepEqual(*val, *test.expect.records[i]) {
+						if !reflect.DeepEqual(*result[i], *test.expect.records[i]) {
 							noErrors = false
-							t.Errorf("\tFAIL -> expected: %v, actual: %v", *val, *test.expect.records[i])
+							t.Errorf("\tFAIL -> expected: %v, actual: %v", *result[i], *test.expect.records[i])
 						}
 
-						if !reflect.DeepEqual(*val.User, *test.expect.records[i].User) {
+						if !reflect.DeepEqual(*result[i].User, *test.expect.records[i].User) {
 							noErrors = false
-							t.Errorf("\tFAIL -> expected: %v, actual: %v", *val.User, *test.expect.records[i].User)
+							t.Errorf("\tFAIL -> expected: %v, actual: %v", *result[i].User, *test.expect.records[i].User)
 						}
 
 					}
@@ -175,6 +175,8 @@ func TestCreate(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockArticleDAO := NewMockDAO(ctrl)
 	svc := NewDefaultService(mockArticleDAO)
+
+	golog.SetLoggingLevel(golog.Disabled)
 
 	type data struct {
 		err    error
