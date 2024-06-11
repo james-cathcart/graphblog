@@ -13,6 +13,166 @@ import (
 	"testing"
 )
 
+func TestResolver_GetArticles(t *testing.T) {
+
+	// build mocks
+	ctrl := gomock.NewController(t)
+	mockArticleSvc := article.NewMockService(ctrl)
+	mockUserSvc := user.NewMockService(ctrl)
+	resolver := NewResolver(mockArticleSvc, mockUserSvc)
+	golog.SetLoggingLevel(golog.Disabled)
+
+	c := client.New(handler.NewDefaultServer(NewExecutableSchema(Config{Resolvers: resolver})))
+
+	// create graphql response struct
+	type response struct {
+		Articles []*model.Article `json:"articles"`
+	}
+
+	// create test data struct
+	type data struct {
+		records []*model.Article
+		query   string
+		resp    response
+		err     error
+	}
+
+	// create test cases
+	tests := []struct {
+		name    string
+		input   data
+		mock    data
+		expect  data
+		prepare func(articleSvcMock *article.MockService, userSvcMock *user.MockService, input data, mock data)
+	}{
+		{
+			name: `happy path`,
+			input: data{
+				query: `query { articles { id title content } }`,
+			},
+			mock: data{
+				records: []*model.Article{
+					{
+						ID:      `1`,
+						Title:   `Title 1`,
+						Content: `Content 1`,
+					},
+					{
+						ID:      `2`,
+						Title:   `Title 2`,
+						Content: `Content 2`,
+					},
+					{
+						ID:      `3`,
+						Title:   `Title 3`,
+						Content: `Content 3`,
+					},
+				},
+			},
+			expect: data{
+				resp: response{
+					Articles: []*model.Article{
+						{
+							ID:      `1`,
+							Title:   `Title 1`,
+							Content: `Content 1`,
+						},
+						{
+							ID:      `2`,
+							Title:   `Title 2`,
+							Content: `Content 2`,
+						},
+						{
+							ID:      `3`,
+							Title:   `Title 3`,
+							Content: `Content 3`,
+						},
+					},
+				},
+			},
+			prepare: func(articleSvcMock *article.MockService, userSvcMock *user.MockService, input data, mock data) {
+				articleSvcMock.EXPECT().GetAll().Return(mock.records, nil)
+			},
+		},
+		{
+			name: `article service returns error`,
+			input: data{
+				query: `query { articles { id title content } }`,
+			},
+			mock: data{
+				err: errors.New(`some error`),
+			},
+			expect: data{
+				err: client.RawJsonError{
+					RawMessage: []byte(`[{"message":"some error","path":["articles"]}]`),
+				},
+			},
+			prepare: func(articleSvcMock *article.MockService, userSvcMock *user.MockService, input data, mock data) {
+				articleSvcMock.EXPECT().GetAll().Return(nil, mock.err)
+			},
+		},
+	}
+
+	// execute test cases
+	for _, test := range tests {
+
+		t.Run(test.name, func(t *testing.T) {
+
+			// prepare mocks
+			if test.prepare != nil {
+				test.prepare(mockArticleSvc, mockUserSvc, test.input, test.mock)
+			}
+
+			// execute logic
+			var resp response
+			err := c.Post(test.input.query, &resp)
+
+			if test.expect.err != nil {
+
+				// handle negative cases
+
+				t.Log(`Error should be as expected`)
+				{
+					if !reflect.DeepEqual(test.expect.err, err) {
+						t.Errorf("\tFAIL -> expected: (%T|%v), actual: (%T|%v)",
+							test.expect.err, test.expect.err, err, err)
+					} else {
+						t.Log("\tSuccess")
+					}
+				}
+
+			} else {
+
+				// handle positive cases
+
+				t.Log(`Error should be nil`)
+				{
+					if err != nil {
+						t.Errorf("\tFAIL -> expected: nil, actual: (%T|%v)", err, err)
+					} else {
+						t.Log("\tSuccess")
+					}
+				}
+
+				t.Log(`Response should be as expected`)
+				{
+					noErrors := true
+					for i := range test.expect.resp.Articles {
+						if !reflect.DeepEqual(*test.expect.resp.Articles[i], *resp.Articles[i]) {
+							noErrors = false
+							t.Errorf("\tFAIL -> expected: %v, actual: %v",
+								*test.expect.resp.Articles[i], *resp.Articles[i])
+						}
+					}
+					if noErrors {
+						t.Log("\tSuccess")
+					}
+				}
+			}
+		})
+	}
+}
+
 func TestResolver_GetUsers(t *testing.T) {
 
 	// build mocks
@@ -30,19 +190,12 @@ func TestResolver_GetUsers(t *testing.T) {
 		Users []*model.User `json:"users"`
 	}
 
-	type errResponse struct {
-		Message string   `json:"message"`
-		Path    []string `json:"path"`
-	}
-
 	// test data struct
 	type data struct {
-		articleRecords []*model.Article
-		records        []*model.User
-		query          string
-		errResp        *errResponse
-		resp           response
-		err            error
+		records []*model.User
+		query   string
+		resp    response
+		err     error
 	}
 
 	// test cases
@@ -59,17 +212,6 @@ func TestResolver_GetUsers(t *testing.T) {
 				query: `query { users{ id name } }`,
 			},
 			mock: data{
-				articleRecords: []*model.Article{
-					{
-						ID:      `1`,
-						Title:   `Title`,
-						Content: `Content`,
-						User: &model.User{
-							ID:   `1`,
-							Name: `One`,
-						},
-					},
-				},
 				records: []*model.User{
 					{
 						ID:   `1`,
@@ -119,12 +261,6 @@ func TestResolver_GetUsers(t *testing.T) {
 				err: client.RawJsonError{
 					RawMessage: []byte(`[{"message":"some error","path":["users"]}]`),
 				},
-				errResp: &errResponse{
-					Message: `some error`,
-					Path: []string{
-						`users`,
-					},
-				},
 			},
 			prepare: func(articleSvcMock *article.MockService, userSvcMock *user.MockService, input data, mock data) {
 				userSvcMock.EXPECT().GetAll().Return(nil, mock.err)
@@ -146,7 +282,7 @@ func TestResolver_GetUsers(t *testing.T) {
 			var resp response
 			err := c.Post(test.input.query, &resp)
 
-			if test.expect.errResp != nil {
+			if test.expect.err != nil {
 
 				// handle negative cases
 				t.Log(`Error should be as expected`)
