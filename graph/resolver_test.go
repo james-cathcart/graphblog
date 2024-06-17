@@ -173,6 +173,117 @@ func TestResolver_GetArticles(t *testing.T) {
 	}
 }
 
+func TestResolver_CreateUser(t *testing.T) {
+
+	// build mocks
+	ctrl := gomock.NewController(t)
+	mockUserSvc := user.NewMockService(ctrl)
+	mockArticleSvc := article.NewMockService(ctrl)
+	resolver := NewResolver(mockArticleSvc, mockUserSvc)
+	golog.SetLoggingLevel(golog.Disabled)
+
+	c := client.New(handler.NewDefaultServer(NewExecutableSchema(Config{Resolvers: resolver})))
+
+	// create graphql response struct
+	type response struct {
+		User *model.User
+	}
+
+	// create test data struct
+	type data struct {
+		query  string
+		usr    model.User
+		newUsr model.NewUser
+		err    error
+	}
+
+	// create test cases
+	tests := []struct {
+		name    string
+		input   data
+		mock    data
+		expect  data
+		prepare func(articleSvcMock *article.MockService, userSvcMock *user.MockService, input data, mock data)
+	}{
+		{
+			name: `happy path`,
+			input: data{
+				query: `mutation { createUser(input: {name: "some_user"}){ id name } }`,
+				usr: model.User{
+					Name: `some_user`,
+				},
+			},
+			mock: data{
+				usr: model.User{
+					ID:   `1`,
+					Name: `some_user`,
+				},
+			},
+			expect: data{
+				usr: model.User{
+					ID:   `1`,
+					Name: `some_user`,
+				},
+			},
+			prepare: func(articleSvcMock *article.MockService, userSvcMock *user.MockService, input data, mock data) {
+				userSvcMock.EXPECT().Create(input.usr).Return(mock.usr, nil)
+			},
+		},
+	}
+
+	// execute test cases
+	for _, test := range tests {
+
+		t.Run(test.name, func(t *testing.T) {
+
+			// prepare mocks
+			if test.prepare != nil {
+				test.prepare(mockArticleSvc, mockUserSvc, test.input, test.mock)
+			}
+
+			var resp response
+			err := c.Post(test.input.query, &resp)
+
+			if test.expect.err != nil {
+
+				// handle negative cases
+
+				t.Log(`Error should be as expected`)
+				{
+					if !reflect.DeepEqual(test.expect.err, err) {
+						t.Errorf("\tFAIL -> expected: (%T|%v), actual: (%T|%v)",
+							test.expect.err, test.expect.err, err, err)
+					} else {
+						t.Log("\tSuccess")
+					}
+				}
+
+			} else {
+
+				// handle positive cases
+
+				t.Log(`Error should be nil`)
+				{
+					if err != nil {
+						t.Errorf("\tFAIL -> expected: nil, actual: (%T|%v)", err, err)
+					} else {
+						t.Log("\tSuccess")
+					}
+				}
+
+				t.Log(`Response should be as expected`)
+				{
+					if !reflect.DeepEqual(resp.User, test.expect.usr) {
+						t.Errorf("\tFAIL -> expected: %v, actual: %v", test.expect.usr, resp)
+					} else {
+						t.Log("\tSuccess")
+					}
+				}
+			}
+		})
+	}
+}
+
 func TestResolver_GetUsers(t *testing.T) {
 
 	// build mocks
