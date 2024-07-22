@@ -23,7 +23,7 @@ func (r *mutationResolver) CreateArticle(ctx context.Context, input model.NewArt
 
 	saved, err := r.articleSvc.Create(incept)
 	if err != nil {
-		r.log.Error(err)
+		r.log.Error(err.Error())
 		return nil, err
 	}
 
@@ -39,7 +39,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) 
 
 	saved, err := r.userSvc.Create(incept)
 	if err != nil {
-		r.log.Error(err)
+		r.log.Error(err.Error())
 		return nil, err
 	}
 
@@ -51,7 +51,7 @@ func (r *queryResolver) Articles(ctx context.Context) ([]*model.Article, error) 
 
 	records, err := r.articleSvc.GetAll()
 	if err != nil {
-		r.log.Error(err)
+		r.log.Error(err.Error())
 		return nil, err
 	}
 	return records, nil
@@ -62,7 +62,7 @@ func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 
 	records, err := r.userSvc.GetAll()
 	if err != nil {
-		r.log.Error(err)
+		r.log.Error(err.Error())
 		return nil, err
 	}
 

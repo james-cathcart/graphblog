@@ -2,19 +2,19 @@ package user
 
 import (
 	"errors"
-	"github.com/james-cathcart/golog"
+	"go.uber.org/zap"
 	"graphblog/graph/model"
 	"strconv"
 )
 
 type DefaultService struct {
-	log      golog.GoLogger
+	log      *zap.Logger
 	userData DAO
 }
 
-func NewDefaultService(userDAO DAO) Service {
+func NewDefaultService(userDAO DAO, logger *zap.Logger) Service {
 	return &DefaultService{
-		log:      golog.NewLogger(golog.NewNativeLogger(`[ user svc ] `)),
+		log:      logger,
 		userData: userDAO,
 	}
 }
@@ -30,7 +30,7 @@ func (svc *DefaultService) Create(input model.User) (model.User, error) {
 
 	id, err := svc.userData.Create(input)
 	if err != nil {
-		svc.log.Error(err)
+		svc.log.Error(err.Error())
 		return model.User{}, err
 	}
 
@@ -43,7 +43,7 @@ func (svc *DefaultService) GetAll() ([]*model.User, error) {
 
 	records, err := svc.userData.GetAll()
 	if err != nil {
-		svc.log.Error(err)
+		svc.log.Error(err.Error())
 		return nil, err
 	}
 

@@ -1,0 +1,44 @@
+---
+services:
+
+  splunk:
+    container_name: graphblog-splunk
+    image: splunk/splunk
+    ports:
+      - 8000:8000
+      - 8088:8088
+    environment:
+      - "SPLUNK_START_ARGS=--accept-license"
+      - "SPLUNK_PASSWORD=d3vP@ss12345678"
+
+  logstash:
+    container_name: graphblog-logstash
+    image: logstash:8.14.3
+    ports:
+      - 5044:5044
+      - 9600:9600
+    depends_on:
+      - splunk
+
+  db:
+    container_name: graphblog-db
+    image: graphblog-db
+    build:
+      context: postgres
+    ports:
+      - 5432:5432
+    depends_on:
+      - splunk
+      - logstash
+    environment:
+      POSTGRES_PASSWORD: devpass
+      POSTGRES_USER: blog_user
+      POSTGRES_DB: blogsite
+
+  filebeat:
+    container_name: graphblog-fb
+    image: graphblog-fb
+    volumes:
+      - type: bind
+        source: app.log
+        target: /app.log

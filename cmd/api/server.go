@@ -2,49 +2,73 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/james-cathcart/golog"
 	_ "github.com/lib/pq"
+	"go.uber.org/zap"
 	"graphblog/graph"
 	"graphblog/internal/article"
+	"graphblog/internal/config"
+	"graphblog/internal/middleware"
 	"graphblog/internal/user"
 	"log"
 	"net/http"
-	"os"
 )
-
-const defaultPort = "8080"
 
 func main() {
 
-	logger := golog.NewLogger(golog.NewNativeLogger(`[ main ] `))
-	logger.Info(`application loading`)
-
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = defaultPort
+	logConf := zap.NewProductionConfig()
+	logConf.OutputPaths = []string{
+		`env/full/app.log`,
 	}
 
-	db, err := sql.Open(`postgres`, `postgresql://blog_user:devpass@localhost:5432/blogsite?sslmode=disable`)
+	logger, err := logConf.Build()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	logger.Info(`boostrapping application`)
+
+	config.Bootstrap()
+
+	dbConnString := fmt.Sprintf(
+		"postgresql://blog_user:devpass@%s:%s/blogsite?sslmode=disable",
+		config.AppConfig.DBHost,
+		config.AppConfig.DBPort,
+	)
+	db, err := sql.Open(`postgres`, dbConnString)
 	if err != nil {
 		panic(err)
 	}
 
 	// dependency injection
-	userDAO := user.NewPostgresDAO(db)
-	userSvc := user.NewDefaultService(userDAO)
+	userDAO := user.NewPostgresDAO(db, logger)
+	userSvc := user.NewDefaultService(userDAO, logger)
 
-	articleDAO := article.NewPostgresDAO(db)
-	articleSvc := article.NewDefaultService(articleDAO)
+	articleDAO := article.NewPostgresDAO(db, logger)
+	articleSvc := article.NewDefaultService(articleDAO, logger)
 
-	resolver := graph.NewResolver(articleSvc, userSvc)
+	resolver := graph.NewResolver(articleSvc, userSvc, logger)
 
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: resolver}))
 
-	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
-	http.Handle("/query", srv)
+	mux := http.NewServeMux()
 
-	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	mux.Handle("/", playground.Handler("GraphQL playground", "/query"))
+	mux.Handle("/query", srv)
+
+	middle := middleware.NewMiddleware(logger)
+
+	serveHost := fmt.Sprintf("0.0.0.0:%s", config.AppConfig.Port)
+	server := http.Server{
+		Addr:    serveHost,
+		Handler: middle.Wrap(mux),
+	}
+
+	log.Printf("connect to %s/ for GraphQL playground", config.AppConfig.Host)
+	err = server.ListenAndServe()
+	if err != nil {
+		logger.Error(err.Error())
+	}
 }

@@ -1,7 +1,7 @@
 package graph
 
 import (
-	"github.com/james-cathcart/golog"
+	"go.uber.org/zap"
 	"graphblog/internal/article"
 	"graphblog/internal/user"
 )
@@ -11,15 +11,15 @@ import (
 // It serves as dependency injection for your app, add any dependencies you require here.
 
 type Resolver struct {
-	log        golog.GoLogger
+	log        *zap.Logger
 	articleSvc article.Service
 	userSvc    user.Service
 }
 
-func NewResolver(articleSvc article.Service, userSvc user.Service) *Resolver {
+func NewResolver(articleSvc article.Service, userSvc user.Service, logger *zap.Logger) *Resolver {
 
 	return &Resolver{
-		log:        golog.NewLogger(golog.NewNativeLogger(`[ resolver ] `)),
+		log:        logger,
 		articleSvc: articleSvc,
 		userSvc:    userSvc,
 	}
